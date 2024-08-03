@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 
 import "./globals.css";
+import { ThemeProvider } from "../components/theme-provider";
 
 // const roboto = Roboto({
 // 	subsets: ["vietnamese"],
@@ -36,10 +37,17 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="en" className={`${myFont.className} ${myFont.variable}`}>
+		<html lang="en" className={`${myFont.className} ${myFont.variable}`} suppressHydrationWarning>
 			<body>
 				<header>my root header</header>
-				{children}
+				<ThemeProvider
+					attribute="class"
+					defaultTheme="system"
+					enableSystem
+					disableTransitionOnChange
+				>
+					{children}
+				</ThemeProvider>
 			</body>
 		</html>
 	);
