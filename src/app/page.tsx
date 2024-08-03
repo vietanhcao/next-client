@@ -1,9 +1,13 @@
 import Image from "next/image";
-import { Button } from "../components/ui/button";
-import Card from "./components/Card";
-import Header from "./Header";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import ButtonRedirect from "./components/ButtonRedirect";
 
 export default function Home() {
+	const isLogin = false;
+	if (!isLogin) {
+		redirect("/login"); // just server component
+	}
 	return (
 		<main className="flex min-h-screen flex-col items-center justify-between p-24">
 			<div className="size-96 bg-red-400">
@@ -16,8 +20,12 @@ export default function Home() {
 					quality={100}
 				/>
 			</div>
-			<Header />
-			<Card />
+			<ul>
+				<li>
+					<Link href="/login">Go to login</Link>
+				</li>
+			</ul>
+			<ButtonRedirect />
 		</main>
 	);
 }

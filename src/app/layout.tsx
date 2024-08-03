@@ -11,16 +11,18 @@ import "./globals.css";
 
 // Font files can be colocated inside of `app`
 const myFont = localFont({
-	src: [{
-		path: './Roboto-Thin.ttf',
-		weight: '100',
-	},
-	{
-		path: './Roboto-Regular.ttf',
-		weight: '400',
-	}],
+	src: [
+		{
+			path: "./Roboto-Thin.ttf",
+			weight: "100",
+		},
+		{
+			path: "./Roboto-Regular.ttf",
+			weight: "400",
+		},
+	],
 	display: "swap",
-	variable: '--font-roboto'
+	variable: "--font-roboto",
 });
 
 export const metadata: Metadata = {
@@ -35,7 +37,10 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en" className={`${myFont.className} ${myFont.variable}`}>
-			<body>{children}</body>
+			<body>
+				<header>my root header</header>
+				{children}
+			</body>
 		</html>
 	);
 }
