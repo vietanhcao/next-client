@@ -6,6 +6,8 @@ import "./globals.css";
 import { ThemeProvider } from "../components/theme-provider";
 import Header from "../components/header";
 import { Toaster } from "../components/ui/toaster";
+import AppProvider from "./AppProvider";
+import { cookies } from "next/headers";
 
 // const roboto = Roboto({
 // 	subsets: ["vietnamese"],
@@ -38,8 +40,15 @@ export default function RootLayout({
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
+	const cookieStore = cookies();
+	const dataCookie = cookieStore.get("sessionToken");
+
 	return (
-		<html lang="en" className={`${myFont.className} ${myFont.variable}`} suppressHydrationWarning>
+		<html
+			lang="en"
+			className={`${myFont.className} ${myFont.variable}`}
+			suppressHydrationWarning
+		>
 			<body>
 				<header>my root header</header>
 				<ThemeProvider
@@ -49,8 +58,8 @@ export default function RootLayout({
 					disableTransitionOnChange
 				>
 					<Header />
-					{children}
-				</ThemeProvider> 
+					<AppProvider initalSessionToken={dataCookie?.value}>{children}</AppProvider>
+				</ThemeProvider>
 				<Toaster />
 			</body>
 		</html>
