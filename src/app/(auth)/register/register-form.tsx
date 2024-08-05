@@ -12,14 +12,17 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
+import authApiRequest from "../../../apiRequest/api.auth";
+import { toast } from "../../../components/ui/use-toast";
 import {
 	RegisterBody,
 	RegisterBodyType,
 } from "../../../schemaValidations/auth.schema";
-import envConfig from "../../config";
 
 export default function RegisterForm() {
+	const router = useRouter();
 	const form = useForm<RegisterBodyType>({
 		resolver: zodResolver(RegisterBody),
 		defaultValues: {
@@ -31,16 +34,37 @@ export default function RegisterForm() {
 	});
 
 	async function onSubmit(values: RegisterBodyType) {
-		console.log(values);
-		const res = await fetch(`${envConfig.NEXT_PUBLIC_API_URL}/auth/register`, {
-			method: "POST",
-			body: JSON.stringify(values),
-			headers: {
-				"Content-Type": "application/json",
-			},
-		}).then((res) => res.json());
+		try {
+			const res = await authApiRequest.register(values);
 
-		console.log(res);
+			await authApiRequest.auth({
+				sessionToken: res.payload.data.token,
+			});
+
+			router.push("/me");
+
+			toast({
+				title: "Login successful",
+			});
+		} catch (error) {
+			console.log("🚀 ~ onSubmit ~ error:", error);
+			const { status, payload } = error as any;
+			if (status === 422) {
+				const errors: { field: any; message: string }[] = payload.errors;
+				errors.forEach((error) => {
+					form.setError(error.field, {
+						type: "server",
+						message: error.message,
+					});
+				});
+			} else {
+				toast({
+					title: "Uh oh! Something went wrong.",
+					variant: "destructive",
+					description: payload?.message,
+				});
+			}
+		}
 	}
 	return (
 		<Form {...form}>

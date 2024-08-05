@@ -12,19 +12,18 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
+import authApiRequest from "../../../apiRequest/api.auth";
+import { useToast } from "../../../components/ui/use-toast";
 import {
 	LoginBody,
-	RegisterBody,
 	LoginBodyType,
 } from "../../../schemaValidations/auth.schema";
-import envConfig from "../../config";
-import { useToast } from "../../../components/ui/use-toast";
-import { useAppContext } from "../../AppProvider";
 
 export default function LoginForm() {
 	const { toast } = useToast();
-	const { setSessionToken } = useAppContext();
+	const router = useRouter();
 	const form = useForm<LoginBodyType>({
 		resolver: zodResolver(LoginBody),
 		defaultValues: {
@@ -35,50 +34,13 @@ export default function LoginForm() {
 
 	async function onSubmit(values: LoginBodyType) {
 		try {
-			const res = await fetch(`${envConfig.NEXT_PUBLIC_API_URL}/auth/login`, {
-				method: "POST",
-				body: JSON.stringify(values),
-				headers: {
-					"Content-Type": "application/json",
-				},
-			}).then(async (res) => {
-				const payload = await res.json();
-				const data = {
-					status: res.status,
-					payload,
-				};
-				if (!res.ok) {
-					throw data;
-				}
+			const res = await authApiRequest.login(values);
 
-				return data;
+			await authApiRequest.auth({
+				sessionToken: res.payload.data.token,
 			});
 
-			const resultFromNextServer = await fetch("/api/auth", {
-				method: "POST",
-				body: JSON.stringify(res),
-				headers: {
-					"Content-Type": "application/json",
-				},
-			}).then(async (res) => {
-				const payload = await res.json();
-				const data = {
-					status: res.status,
-					payload,
-				};
-				if (!res.ok) {
-					throw data;
-				}
-
-				return data;
-			});
-
-			console.log(
-				"🚀 ~ onSubmit ~ resultFromNextServer:",
-				resultFromNextServer
-			);
-
-			setSessionToken(resultFromNextServer.payload.data.token);
+			router.push("/me");
 
 			toast({
 				title: "Login successful",
@@ -98,7 +60,7 @@ export default function LoginForm() {
 				toast({
 					title: "Uh oh! Something went wrong.",
 					variant: "destructive",
-					description: payload.message,
+					description: payload?.message,
 				});
 			}
 		}
