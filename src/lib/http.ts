@@ -1,5 +1,6 @@
 import envConfig from "../app/config";
 import { LoginResType } from "../schemaValidations/auth.schema";
+import { normalizePath } from "./utils";
 
 type CustomOptions = Omit<RequestInit, "method"> & {
 	baseUrl?: string;
@@ -26,13 +27,13 @@ export class HttpError extends Error {
 }
 
 export class EntityError extends HttpError {
-	status: 422;
+	status: typeof ENTITY_ERROR_STATUS;
 	payload: EntityErrorPlayload;
 	constructor({
 		status,
 		payload,
 	}: {
-		status: 422;
+		status: typeof ENTITY_ERROR_STATUS;
 		payload: EntityErrorPlayload;
 	}) {
 		super({ status, payload });
@@ -104,7 +105,7 @@ const request = async <Response>(
 		if (res.status === ENTITY_ERROR_STATUS) {
 			throw new EntityError(
 				data as {
-					status: 422;
+					status: typeof ENTITY_ERROR_STATUS;
 					payload: EntityErrorPlayload;
 				}
 			);
@@ -112,11 +113,18 @@ const request = async <Response>(
 		throw new HttpError(data);
 	}
 
-	if (["/auth/login", "/auth/register"].includes(url)) {
-		clientSessionToken.value = (payload as LoginResType).data.token;
-	}
-	if ("/auth/logout".includes(url)) {
-		clientSessionToken.value = "";
+	// đảm bảo url chạy ở client side
+	if (typeof window !== "undefined") {
+		if (
+			["auth/login", "auth/register"].some(
+				(item) => item === normalizePath(url)
+			)
+		) {
+			clientSessionToken.value = (payload as LoginResType).data.token;
+		}
+		if ("auth/logout" === normalizePath(url)) {
+			clientSessionToken.value = "";
+		}
 	}
 
 	return data;

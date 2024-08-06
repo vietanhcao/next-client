@@ -28,6 +28,15 @@ export const handleErrorApi = ({
 			variant: "destructive",
 			duration,
 		});
-    console.error(error);
+		console.error(error);
 	}
+};
+
+/**
+ * xóa dấu / ở đầu path
+ * @param path 
+ * @returns 
+ */
+export const normalizePath = (path: string) => {
+	return path.startsWith("/") ? path.slice(1) : path;
 };
