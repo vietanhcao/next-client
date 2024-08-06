@@ -20,10 +20,13 @@ import {
 	LoginBody,
 	LoginBodyType,
 } from "../../../schemaValidations/auth.schema";
+import { handleErrorApi } from "../../../lib/utils";
+import { useState } from "react";
 
 export default function LoginForm() {
 	const { toast } = useToast();
 	const router = useRouter();
+	const [loading, setLoading] = useState(false);
 	const form = useForm<LoginBodyType>({
 		resolver: zodResolver(LoginBody),
 		defaultValues: {
@@ -33,7 +36,9 @@ export default function LoginForm() {
 	});
 
 	async function onSubmit(values: LoginBodyType) {
+		if (loading) return;
 		try {
+			setLoading(true);
 			const res = await authApiRequest.login(values);
 
 			await authApiRequest.auth({
@@ -46,23 +51,9 @@ export default function LoginForm() {
 				title: "Login successful",
 			});
 		} catch (error) {
-			console.log("🚀 ~ onSubmit ~ error:", error);
-			const { status, payload } = error as any;
-			if (status === 422) {
-				const errors: { field: any; message: string }[] = payload.errors;
-				errors.forEach((error) => {
-					form.setError(error.field, {
-						type: "server",
-						message: error.message,
-					});
-				});
-			} else {
-				toast({
-					title: "Uh oh! Something went wrong.",
-					variant: "destructive",
-					description: payload?.message,
-				});
-			}
+			handleErrorApi({ error, setError: form.setError });
+		} finally {
+			setLoading(false);
 		}
 	}
 	return (

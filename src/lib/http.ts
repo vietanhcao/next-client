@@ -5,11 +5,40 @@ type CustomOptions = Omit<RequestInit, "method"> & {
 	baseUrl?: string;
 };
 
-class HttpError extends Error {
+const ENTITY_ERROR_STATUS = 422;
+
+type EntityErrorPlayload = {
+	message: string;
+	errors: { field: string; message: string }[]; // format server trả về
+};
+
+export class HttpError extends Error {
 	status: number;
-	payload: any;
+	payload: {
+		message: string;
+		[key: string]: any;
+	};
 	constructor({ status, payload }: { status: number; payload: any }) {
 		super("HTTP Error");
+		this.status = status;
+		this.payload = payload;
+	}
+}
+
+export class EntityError extends HttpError {
+	status: 422;
+	payload: EntityErrorPlayload;
+	constructor({
+		status,
+		payload,
+	}: {
+		status: 422;
+		payload: EntityErrorPlayload;
+	}) {
+		super({ status, payload });
+		if (status !== ENTITY_ERROR_STATUS) {
+			throw new Error("EntityError must have status 422");
+		}
 		this.status = status;
 		this.payload = payload;
 	}
@@ -72,6 +101,14 @@ const request = async <Response>(
 	};
 
 	if (!res.ok) {
+		if (res.status === ENTITY_ERROR_STATUS) {
+			throw new EntityError(
+				data as {
+					status: 422;
+					payload: EntityErrorPlayload;
+				}
+			);
+		}
 		throw new HttpError(data);
 	}
 

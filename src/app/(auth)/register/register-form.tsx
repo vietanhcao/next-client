@@ -20,9 +20,12 @@ import {
 	RegisterBody,
 	RegisterBodyType,
 } from "../../../schemaValidations/auth.schema";
+import { handleErrorApi } from "../../../lib/utils";
+import { useState } from "react";
 
 export default function RegisterForm() {
 	const router = useRouter();
+	const [loading, setLoading] = useState(false);
 	const form = useForm<RegisterBodyType>({
 		resolver: zodResolver(RegisterBody),
 		defaultValues: {
@@ -34,6 +37,8 @@ export default function RegisterForm() {
 	});
 
 	async function onSubmit(values: RegisterBodyType) {
+		if (loading) return;
+		setLoading(true);
 		try {
 			const res = await authApiRequest.register(values);
 
@@ -47,23 +52,9 @@ export default function RegisterForm() {
 				title: "Login successful",
 			});
 		} catch (error) {
-			console.log("🚀 ~ onSubmit ~ error:", error);
-			const { status, payload } = error as any;
-			if (status === 422) {
-				const errors: { field: any; message: string }[] = payload.errors;
-				errors.forEach((error) => {
-					form.setError(error.field, {
-						type: "server",
-						message: error.message,
-					});
-				});
-			} else {
-				toast({
-					title: "Uh oh! Something went wrong.",
-					variant: "destructive",
-					description: payload?.message,
-				});
-			}
+			handleErrorApi({ error, setError: form.setError });
+		} finally {
+			setLoading(false);
 		}
 	}
 	return (
