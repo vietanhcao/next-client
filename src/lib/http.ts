@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import envConfig from "../app/config";
 import { LoginResType } from "../schemaValidations/auth.schema";
 import { normalizePath } from "./utils";
@@ -7,6 +8,7 @@ type CustomOptions = Omit<RequestInit, "method"> & {
 };
 
 const ENTITY_ERROR_STATUS = 422;
+const AUTHENTICATION_ERROR_STATUS = 401;
 
 type EntityErrorPlayload = {
 	message: string;
@@ -61,6 +63,7 @@ class SessionToken {
 }
 
 export const clientSessionToken = new SessionToken();
+let clientLogoutRequest: Promise<Response> | null = null;
 
 const request = async <Response>(
 	method: "GET" | "POST" | "PUT" | "DELETE",
@@ -109,6 +112,36 @@ const request = async <Response>(
 					payload: EntityErrorPlayload;
 				}
 			);
+		}
+		if (res.status === AUTHENTICATION_ERROR_STATUS) {
+			if (typeof window !== "undefined") {
+				// client side
+				// chặn việc gọi nhiều lần logout
+				if (!clientLogoutRequest) {
+					// Xóa token khi logout ở client chỉ sử dụng function base ở interceptor
+					// lúc này sẽ không còn clientSessionToken.value
+					// call api logout server nextjs to remove cookie
+					clientLogoutRequest = fetch("/api/auth/logout", {
+						method: "POST",
+						headers: {
+							...baseHeader,
+						},
+						body: JSON.stringify({ force: true }),
+					});
+
+					await clientLogoutRequest;
+					clientSessionToken.value = "";
+					clientLogoutRequest = null;
+					location.href = "/login";
+				}
+			} else {
+				// server side
+				const sessionToken = (options?.headers as any)?.Authorization.split(
+					"Bearer "
+				)[1];
+
+				redirect("/logout?sessionToken=" + sessionToken);
+			}
 		}
 		throw new HttpError(data);
 	}

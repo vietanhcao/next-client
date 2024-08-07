@@ -12,9 +12,9 @@ export default async function PageMe() {
 		<div>
 			<h4 className="text-2xl font-semibold text-center">Profile</h4>
 			<div className="flex justify-center">
-				<p>{JSON.stringify(res.payload.data)}</p>
+				{/* <p>{JSON.stringify(res.payload.data)}</p> */}
 			</div>
-			<Profile />
+			{/* <Profile /> */}
 		</div>
 	);
 }
