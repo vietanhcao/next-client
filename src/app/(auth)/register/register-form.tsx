@@ -44,6 +44,7 @@ export default function RegisterForm() {
 
 			await authApiRequest.auth({
 				sessionToken: res.payload.data.token,
+				expiresAt: res.payload.data.expiresAt,
 			});
 
 			router.push("/me");

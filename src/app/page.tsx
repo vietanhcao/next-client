@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import ButtonRedirect from "./components/ButtonRedirect";
 
 export default function Home() {
 	const isLogin = false;
@@ -25,7 +24,6 @@ export default function Home() {
 					<Link href="/login">Go to login</Link>
 				</li>
 			</ul>
-			<ButtonRedirect />
 		</main>
 	);
 }

@@ -8,6 +8,7 @@ import Header from "../components/header";
 import { Toaster } from "../components/ui/toaster";
 import AppProvider from "./AppProvider";
 import { cookies } from "next/headers";
+import SlideSession from "../components/slide-session";
 
 // const roboto = Roboto({
 // 	subsets: ["vietnamese"],
@@ -58,7 +59,10 @@ export default function RootLayout({
 					disableTransitionOnChange
 				>
 					<Header />
-					<AppProvider initalSessionToken={dataCookie?.value}>{children}</AppProvider>
+					<AppProvider initalSessionToken={dataCookie?.value}>
+						{children}
+						<SlideSession />
+					</AppProvider>
 				</ThemeProvider>
 				<Toaster />
 			</body>
