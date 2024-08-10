@@ -2,6 +2,7 @@ import React from "react";
 import productApiRequest from "../../apiRequest/api.product";
 import Image from "next/image";
 import { Button } from "../../components/ui/button";
+import Link from "next/link";
 
 export default async function ProductListPage() {
 	const res = await productApiRequest.getList();
@@ -10,6 +11,7 @@ export default async function ProductListPage() {
 	return (
 		<div>
 			<h4 className="text-2xl font-semibold text-center">Product List Page</h4>
+			<Link href={"/products/add"}>Add Product</Link>
 			<div className="flex justify-center">
 				<ul>
 					{productList.map((product) => (
@@ -24,6 +26,7 @@ export default async function ProductListPage() {
 							<p>{product.name}</p>
 							<p>{product.price}</p>
 							<div className="flex space-x-2">
+								<Link href={"/products/" + product.id}>Product detail</Link>
 								<Button variant={"outline"}> Edit</Button>
 								<Button variant={"destructive"}> Delete</Button>
 							</div>
