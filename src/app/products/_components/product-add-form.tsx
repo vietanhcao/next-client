@@ -21,12 +21,18 @@ import { useRef, useState } from "react";
 import {
 	CreateProductBody,
 	CreateProductBodyType,
+	ProductResType,
+	UpdateProductBodyType,
 } from "../../../schemaValidations/product.schema";
 import productApiRequest from "../../../apiRequest/api.product";
 import { Textarea } from "../../../components/ui/textarea";
 import Image from "next/image";
 
-export default function ProductAddForm() {
+interface ProductAddFormProps {
+	product?: ProductResType["data"];
+}
+
+export default function ProductAddForm({ product }: ProductAddFormProps) {
 	const [file, setFile] = useState<File | null>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const { toast } = useToast();
@@ -35,16 +41,16 @@ export default function ProductAddForm() {
 	const form = useForm<CreateProductBodyType>({
 		resolver: zodResolver(CreateProductBody),
 		defaultValues: {
-			name: "",
-			price: 0,
-			description: "",
-			image: "",
+			name: product?.name || "",
+			price: product?.price || 0,
+			description: product?.description || "",
+			image: product?.image || "",
 		},
 	});
 
-	async function onSubmit(values: CreateProductBodyType) {
-		if (loading) return;
+	const image = form.watch("image");
 
+	const createProduct = async (values: CreateProductBodyType) => {
 		try {
 			setLoading(true);
 			const formData = new FormData();
@@ -65,6 +71,41 @@ export default function ProductAddForm() {
 			handleErrorApi({ error, setError: form.setError });
 		} finally {
 			setLoading(false);
+		}
+	};
+
+	const updateProduct = async (values: UpdateProductBodyType) => {
+		if (!product) return;
+		try {
+			setLoading(true);
+			if (file) {
+				const formData = new FormData();
+				formData.append("file", file as Blob);
+				const resUpload = await productApiRequest.uploadImage(formData);
+				const imageUrl = resUpload.payload.data;
+				values.image = imageUrl;
+			}
+
+			const res = await productApiRequest.update(product.id, {
+				...values,
+			});
+
+			toast({
+				title: "Update Product successful",
+			});
+		} catch (error) {
+			handleErrorApi({ error, setError: form.setError });
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	async function onSubmit(values: CreateProductBodyType) {
+		if (loading) return;
+		if (product) {
+			updateProduct(values);
+		} else {
+			createProduct(values);
 		}
 	}
 	return (
@@ -142,10 +183,10 @@ export default function ProductAddForm() {
 						</FormItem>
 					)}
 				/>
-				{file && (
+				{(file || image) && (
 					<div>
 						<Image
-							src={URL.createObjectURL(file)}
+							src={file ? URL.createObjectURL(file) : image}
 							alt="preview"
 							className="w-32 h-32 object-cover"
 							width={200}

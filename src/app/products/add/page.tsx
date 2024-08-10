@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import ProductAddForm from "./product-add-form";
+import ProductAddForm from "../_components/product-add-form";
 
 export default async function ProductPage() {
 	const cookieStore = cookies();
