@@ -82,13 +82,21 @@ const request = async <Response>(
 	url: string,
 	options?: CustomOptions
 ) => {
-	const body = options?.body ? JSON.stringify(options.body) : undefined;
+	const body = options?.body
+		? options.body instanceof FormData
+			? options.body
+			: JSON.stringify(options.body)
+		: undefined;
 	const baseHeader = {
 		"Content-Type": "application/json",
 		Authorization: clientSessionToken.value
 			? `Bearer ${clientSessionToken.value}`
 			: "",
 	};
+
+	if(options?.body instanceof FormData) {
+		delete (baseHeader as Record<string, string>)["Content-Type"];
+	}
 
 	// Nếu truyền baseUrl thì lấy giá trị truyền vào, truyền vào ""  thì đồng nghĩa với việc gọi đến Api Nextjs
 

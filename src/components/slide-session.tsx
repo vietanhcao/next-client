@@ -16,7 +16,6 @@ export default function SlideSession() {
 	};
 
 	useEffect(() => {
-		handleSlideSession();
 		const interval = setInterval(() => {
 			handleSlideSession();
 		}, 1000 * 60 * 60);
