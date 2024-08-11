@@ -47,55 +47,32 @@ export class EntityError extends HttpError {
 	}
 }
 
-// Chỉ sử dụng cở client
-class SessionToken {
-	private token = "";
-	private _expiresAt = new Date().toISOString();
-	get value() {
-		return this.token;
-	}
-	set value(token: string) {
-		// check server side
-		if (typeof window === "undefined") {
-			throw new Error("Cannot set token on server side");
-		}
-		this.token = token;
-	}
-
-	get expiresAt() {
-		return this._expiresAt;
-	}
-	set expiresAt(expiresAt: string) {
-		// check server side
-		if (typeof window === "undefined") {
-			throw new Error("Cannot set expiresAt on server side");
-		}
-		this._expiresAt = expiresAt;
-	}
-}
-
-export const clientSessionToken = new SessionToken();
 let clientLogoutRequest: Promise<Response> | null = null;
+
+// nên dùng hàm vì mỗi lần khởi tạo request isClient sẽ có giá trị mới
+export const isClient = () => typeof window !== "undefined";
 
 const request = async <Response>(
 	method: "GET" | "POST" | "PUT" | "DELETE",
 	url: string,
 	options?: CustomOptions
 ) => {
-	const body = options?.body
-		? options.body instanceof FormData
-			? options.body
-			: JSON.stringify(options.body)
-		: undefined;
-	const baseHeader = {
-		"Content-Type": "application/json",
-		Authorization: clientSessionToken.value
-			? `Bearer ${clientSessionToken.value}`
-			: "",
-	};
+	let body: string | FormData | undefined = undefined;
+	if (options?.body instanceof FormData) {
+		body = options.body;
+	} else if (options?.body) {
+		body = JSON.stringify(options.body);
+	}
 
-	if(options?.body instanceof FormData) {
-		delete (baseHeader as Record<string, string>)["Content-Type"];
+	const baseHeader: {
+		[key: string]: string;
+	} = body instanceof FormData ? {} : { "Content-Type": "application/json" };
+
+	if (isClient()) {
+		const sessionToken = localStorage.getItem("sessionToken");
+		if (sessionToken) {
+			baseHeader.Authorization = `Bearer ${sessionToken}`;
+		}
 	}
 
 	// Nếu truyền baseUrl thì lấy giá trị truyền vào, truyền vào ""  thì đồng nghĩa với việc gọi đến Api Nextjs
@@ -134,7 +111,7 @@ const request = async <Response>(
 			);
 		}
 		if (res.status === AUTHENTICATION_ERROR_STATUS) {
-			if (typeof window !== "undefined") {
+			if (isClient()) {
 				// client side
 				// chặn việc gọi nhiều lần logout
 				if (!clientLogoutRequest) {
@@ -149,11 +126,15 @@ const request = async <Response>(
 						body: JSON.stringify({ force: true }),
 					});
 
-					await clientLogoutRequest;
-					clientSessionToken.value = "";
-					clientSessionToken.expiresAt = new Date().toISOString();
-					clientLogoutRequest = null;
-					location.href = "/login";
+					try {
+						await clientLogoutRequest;
+					} catch (error) {
+					} finally {
+						localStorage.removeItem("sessionToken");
+						localStorage.removeItem("sessionTokenExpiresAt");
+						clientLogoutRequest = null;
+						location.href = "/login";
+					}
 				}
 			} else {
 				// server side
@@ -168,18 +149,19 @@ const request = async <Response>(
 	}
 
 	// đảm bảo url chạy ở client side
-	if (typeof window !== "undefined") {
+	if (isClient()) {
 		if (
 			["auth/login", "auth/register"].some(
 				(item) => item === normalizePath(url)
 			)
 		) {
-			clientSessionToken.value = (payload as LoginResType).data.token;
-			clientSessionToken.expiresAt = (payload as LoginResType).data.expiresAt;
+			const { token, expiresAt } = (payload as LoginResType).data;
+			localStorage.setItem("sessionToken", token);
+			localStorage.setItem("sessionTokenExpiresAt", expiresAt);
 		}
 		if ("auth/logout" === normalizePath(url)) {
-			clientSessionToken.value = "";
-			clientSessionToken.expiresAt = new Date().toISOString();
+			localStorage.removeItem("sessionToken");
+			localStorage.removeItem("sessionTokenExpiresAt");
 		}
 	}
 

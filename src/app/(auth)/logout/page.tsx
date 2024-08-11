@@ -1,10 +1,9 @@
 "use client";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import React, { useEffect } from "react";
-import { clientSessionToken } from "../../../lib/http";
+import React, { Suspense, useEffect } from "react";
 import authApiRequest from "../../../apiRequest/api.auth";
 
-export default function LogoutPage() {
+function LogoutLogic() {
 	const router = useRouter();
 	const pathname = usePathname();
 	const searchParams = useSearchParams();
@@ -13,7 +12,8 @@ export default function LogoutPage() {
 		// chặn call 2 lần api logout
 		const controler = new AbortController();
 		const signal = controler.signal;
-		if (sessionToken === clientSessionToken.value) {
+		const clientSessionToken = localStorage.getItem("sessionToken");
+		if (sessionToken === clientSessionToken) {
 			authApiRequest.logoutFromNextClientToNextServer(true, signal).then(() => {
 				router.push("/login?redirectForm=" + pathname);
 			});
@@ -27,5 +27,11 @@ export default function LogoutPage() {
 			<h4 className="text-2xl font-semibold text-center">Logout Page</h4>
 			<div className="flex justify-center"></div>
 		</div>
+	);
+}
+
+export default function LogoutPage() {
+	return (
+		<Suspense fallback={<div>Loading...</div>}>{<LogoutLogic />}</Suspense>
 	);
 }
