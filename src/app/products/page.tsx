@@ -5,6 +5,11 @@ import { Button } from "../../components/ui/button";
 import Link from "next/link";
 import DeleteProduct from "./_components/delete-product";
 import { cookies } from "next/headers";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+	title: "List Product",
+};
 
 export default async function ProductListPage() {
 	const cookieStore = cookies();
@@ -35,9 +40,9 @@ export default async function ProductListPage() {
 							<p>{product.price}</p>
 							{isAuthenticated && (
 								<div className="flex space-x-2">
-									<Button variant={"outline"}>
-										<Link href={"/products/" + product.id + "/edit"}>Edit</Link>
-									</Button>
+									<Link href={"/products/" + product.id + "/edit"}>
+										<Button variant={"outline"}>Edit</Button>
+									</Link>
 									<DeleteProduct product={product} />
 								</div>
 							)}

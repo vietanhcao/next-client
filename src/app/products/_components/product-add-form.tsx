@@ -94,6 +94,7 @@ export default function ProductAddForm({ product }: ProductAddFormProps) {
 			toast({
 				title: "Update Product successful",
 			});
+			router.refresh();
 		} catch (error) {
 			handleErrorApi({ error, setError: form.setError });
 		} finally {

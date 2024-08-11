@@ -3,6 +3,11 @@ import envConfig from "../config";
 import Profile from "./profile";
 import accountApiRequest from "../../apiRequest/api.account";
 import ProfileForm from "./profile-form";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+	title: "Profile",
+};
 
 export default async function MeProfile() {
 	const cookieStore = cookies();
