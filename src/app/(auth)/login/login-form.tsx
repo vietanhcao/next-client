@@ -47,6 +47,7 @@ export default function LoginForm() {
 			});
 
 			router.push("/me");
+			router.refresh();
 
 			toast({
 				title: "Login successful",

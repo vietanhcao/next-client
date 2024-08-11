@@ -48,7 +48,7 @@ export default function RegisterForm() {
 			});
 
 			router.push("/me");
-
+			router.refresh();
 			toast({
 				title: "Login successful",
 			});
