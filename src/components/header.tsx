@@ -4,20 +4,13 @@ import Link from "next/link";
 import ButtonLogout from "./button-logout";
 import { cookies } from "next/headers";
 import accountApiRequest from "../apiRequest/api.account";
+import { AccountResType } from "../schemaValidations/account.schema";
 
-export default async function Header() {
-	const cookieStore = cookies();
-	const sessionToken = cookieStore.get("sessionToken")?.value || "";
-	let user = null;
-	if (sessionToken) {
-		try {
-			const rest = await accountApiRequest.me(sessionToken);
-			user = rest.payload.data;
-		} catch (error) {
-			console.log("🚀 ~ Header ~ error:", error);
-		}
-	}
+interface HeaderProps {
+	user: AccountResType["data"] | null;
+}
 
+export default async function Header({ user }: HeaderProps) {
 	return (
 		<div>
 			<ul className="flex gap-2">

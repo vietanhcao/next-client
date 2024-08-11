@@ -4,15 +4,20 @@ import Image from "next/image";
 import { Button } from "../../components/ui/button";
 import Link from "next/link";
 import DeleteProduct from "./_components/delete-product";
+import { cookies } from "next/headers";
 
 export default async function ProductListPage() {
+	const cookieStore = cookies();
+	const sessionToken = cookieStore.get("sessionToken")?.value || "";
+	const isAuthenticated = sessionToken ? true : false;
+
 	const res = await productApiRequest.getList();
 	const productList = res.payload.data;
 
 	return (
 		<div>
 			<h4 className="text-2xl font-semibold text-center">Product List Page</h4>
-			<Link href={"/products/add"}>Add Product</Link>
+			{isAuthenticated && <Link href={"/products/add"}>Add Product</Link>}
 			<div className="flex justify-center">
 				<ul>
 					{productList.map((product) => (
@@ -26,12 +31,14 @@ export default async function ProductListPage() {
 							/>
 							<p>{product.name}</p>
 							<p>{product.price}</p>
-							<div className="flex space-x-2">
-								<Button variant={"outline"}>
-									<Link href={"/products/" + product.id}>Edit</Link>
-								</Button>
-								<DeleteProduct product={product} />
-							</div>
+							{isAuthenticated && (
+								<div className="flex space-x-2">
+									<Button variant={"outline"}>
+										<Link href={"/products/" + product.id}>Edit</Link>
+									</Button>
+									<DeleteProduct product={product} />
+								</div>
+							)}
 						</li>
 					))}
 				</ul>
