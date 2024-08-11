@@ -22,19 +22,21 @@ export default async function ProductListPage() {
 				<ul>
 					{productList.map((product) => (
 						<li className="flex gap-2 items-center" key={product.id}>
-							<Image
-								src={product.image}
-								alt={product.name}
-								width={100}
-								height={100}
-								className="w-32 h-32 object-cover"
-							/>
+							<Link href={"/products/" + product.id}>
+								<Image
+									src={product.image}
+									alt={product.name}
+									width={100}
+									height={100}
+									className="w-32 h-32 object-cover"
+								/>
+							</Link>
 							<p>{product.name}</p>
 							<p>{product.price}</p>
 							{isAuthenticated && (
 								<div className="flex space-x-2">
 									<Button variant={"outline"}>
-										<Link href={"/products/" + product.id}>Edit</Link>
+										<Link href={"/products/" + product.id + "/edit"}>Edit</Link>
 									</Button>
 									<DeleteProduct product={product} />
 								</div>

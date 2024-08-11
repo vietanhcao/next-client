@@ -46,7 +46,7 @@ export default function LoginForm() {
 				expiresAt: res.payload.data.expiresAt,
 			});
 
-			router.push("/me");
+			router.push("/");
 			router.refresh();
 
 			toast({
