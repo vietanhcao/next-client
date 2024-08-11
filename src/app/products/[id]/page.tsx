@@ -3,10 +3,10 @@ import productApiRequest from "../../../apiRequest/api.product";
 import Image from "next/image";
 import { Metadata, ResolvingMetadata } from "next";
 import { cache } from "react";
-
+import envConfig from "../../config";
+import { baseOpenGraph } from "../../shared-metadata";
 
 const getDetail = cache(productApiRequest.getDetail);
-
 
 type Props = {
 	params: { id: string };
@@ -25,6 +25,7 @@ export async function generateMetadata(
 	} catch (error) {
 		console.log("🚀 ~ ProductDetailPage ~ error:", error);
 	}
+	const url = envConfig.NEXT_PUBLIC_URL + "/products/" + params.id;
 
 	// optionally access and extend (rather than replace) parent metadata
 	// const previousImages = (await parent).openGraph?.images || [];
@@ -32,9 +33,21 @@ export async function generateMetadata(
 	return {
 		title: product?.name,
 		description: product?.description,
-		// openGraph: {
-		// 	images: ["/some-specific-page-image.jpg", ...previousImages],
-		// },
+		openGraph: {
+			...baseOpenGraph,
+			title: product?.name,
+			description: product?.description,
+			url: url,
+			siteName: "FA Company",
+			images: [
+				{
+					url: product?.image!, // Must be an absolute URL
+				},
+			],
+		},
+		alternates: {
+			canonical: url,
+		},
 	};
 }
 
