@@ -27,8 +27,9 @@ export default async function ProductListPage() {
 							<p>{product.name}</p>
 							<p>{product.price}</p>
 							<div className="flex space-x-2">
-								<Link href={"/products/" + product.id}>Product detail</Link>
-								<Button variant={"outline"}> Edit</Button>
+								<Button variant={"outline"}>
+									<Link href={"/products/" + product.id}>Edit</Link>
+								</Button>
 								<DeleteProduct product={product} />
 							</div>
 						</li>

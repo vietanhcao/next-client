@@ -67,6 +67,7 @@ export default function ProductAddForm({ product }: ProductAddFormProps) {
 				title: "Create Product successful",
 			});
 			router.push("/products");
+			router.refresh();
 		} catch (error) {
 			handleErrorApi({ error, setError: form.setError });
 		} finally {
