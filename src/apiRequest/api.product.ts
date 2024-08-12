@@ -9,9 +9,7 @@ import {
 
 const productApiRequest = {
 	getList: () =>
-		http.get<ProductListResType>("/products", {
-			cache: "no-store",
-		}),
+		http.get<ProductListResType>("/products"),
 
 	getDetail: (id: number) =>
 		http.get<ProductResType>(`/products/${id}`, {

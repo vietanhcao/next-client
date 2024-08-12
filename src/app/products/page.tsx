@@ -1,28 +1,29 @@
-import React from "react";
-import productApiRequest from "../../apiRequest/api.product";
-import Image from "next/image";
-import { Button } from "../../components/ui/button";
-import Link from "next/link";
-import DeleteProduct from "./_components/delete-product";
-import { cookies } from "next/headers";
 import { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import productApiRequest from "../../apiRequest/api.product";
+import dynamic from "next/dynamic";
+const ProductAddButton = dynamic(
+	() => import("./_components/product-add-button"),
+	{ ssr: false }
+);
+const ProductEditButton = dynamic(
+	() => import("./_components/product-edit-button"),
+	{ ssr: false }
+);
 
 export const metadata: Metadata = {
 	title: "List Product",
 };
 
 export default async function ProductListPage() {
-	const cookieStore = cookies();
-	const sessionToken = cookieStore.get("sessionToken")?.value || "";
-	const isAuthenticated = sessionToken ? true : false;
-
 	const res = await productApiRequest.getList();
 	const productList = res.payload.data;
 
 	return (
 		<div>
 			<h4 className="text-2xl font-semibold text-center">Product List Page</h4>
-			{isAuthenticated && <Link href={"/products/add"}>Add Product</Link>}
+			<ProductAddButton />
 			<div className="flex justify-center">
 				<ul>
 					{productList.map((product) => (
@@ -38,14 +39,7 @@ export default async function ProductListPage() {
 							</Link>
 							<p>{product.name}</p>
 							<p>{product.price}</p>
-							{isAuthenticated && (
-								<div className="flex space-x-2">
-									<Link href={"/products/" + product.id + "/edit"}>
-										<Button variant={"outline"}>Edit</Button>
-									</Link>
-									<DeleteProduct product={product} />
-								</div>
-							)}
+							<ProductEditButton product={product} />
 						</li>
 					))}
 				</ul>

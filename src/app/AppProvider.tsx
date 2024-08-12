@@ -1,15 +1,18 @@
 "use client";
 import { createContext, useContext, useState } from "react";
 import { AccountResType } from "../schemaValidations/account.schema";
+import { isClient } from "../lib/http";
 
 type User = AccountResType["data"];
 
 const AppContext = createContext<{
 	user: User | null;
 	setUser: (user: User | null) => void;
+	isAuthenticated: boolean;
 }>({
 	user: null,
 	setUser: () => {},
+	isAuthenticated: false,
 });
 
 export const useAppContext = () => {
@@ -22,18 +25,35 @@ export const useAppContext = () => {
 
 export default function AppProvider({
 	children,
-	user: userProp,
 }: {
 	children: React.ReactNode;
-	user: User | null;
 }) {
-	const [user, setUser] = useState(userProp);
+	const [user, setUserState] = useState<User | null>(() => {
+		// cần tìm hiêu thêm vế function dispatch setStateAction
+		if (isClient()) {
+			const user = localStorage.getItem("user");
+			return user ? JSON.parse(user) : null;
+		}
+	});
+	const isAuthenticated = Boolean(user);
+
+	const setUser = (user: User | null) => {
+		setUserState(user);
+		if (isClient()) {
+			if (user) {
+				localStorage.setItem("user", JSON.stringify(user));
+			} else {
+				localStorage.removeItem("user");
+			}
+		}
+	}
 
 	return (
 		<AppContext.Provider
 			value={{
 				user,
 				setUser,
+				isAuthenticated,
 			}}
 		>
 			{children}

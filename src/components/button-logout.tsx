@@ -4,9 +4,11 @@ import { Button } from "./ui/button";
 import authApiRequest from "../apiRequest/api.auth";
 import { usePathname, useRouter } from "next/navigation";
 import { handleErrorApi } from "../lib/utils";
+import { useAppContext } from "../app/AppProvider";
 
 export default function ButtonLogout() {
 	const router = useRouter();
+	const { setUser } = useAppContext();
 	const pathname = usePathname();
 	const handleLogout = async () => {
 		try {
@@ -19,6 +21,7 @@ export default function ButtonLogout() {
 			});
 		} finally {
 			router.refresh();
+			setUser(null);
 			localStorage.removeItem("sessionToken");
 			localStorage.removeItem("sessionTokenExpiresAt");
 		}

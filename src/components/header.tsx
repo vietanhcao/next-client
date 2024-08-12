@@ -1,25 +1,17 @@
-import React from "react";
-import { ModeToggle } from "./mode-toggle";
+"use client";
 import Link from "next/link";
+import { useAppContext } from "../app/AppProvider";
 import ButtonLogout from "./button-logout";
-import { cookies } from "next/headers";
-import accountApiRequest from "../apiRequest/api.account";
-import { AccountResType } from "../schemaValidations/account.schema";
+import { ModeToggle } from "./mode-toggle";
 
-interface HeaderProps {
-	user: AccountResType["data"] | null;
-}
-
-export default async function Header({ user }: HeaderProps) {
+export default function Header() {
+	const { user } = useAppContext();
 	return (
 		<div>
 			<ul className="flex gap-2">
 				<li>
 					<Link href={"/products"}>Products</Link>
 				</li>
-				<li>
-						<ButtonLogout />
-					</li>
 
 				{user ? (
 					<li>

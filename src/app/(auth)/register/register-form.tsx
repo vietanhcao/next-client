@@ -22,9 +22,11 @@ import {
 } from "../../../schemaValidations/auth.schema";
 import { handleErrorApi } from "../../../lib/utils";
 import { useState } from "react";
+import { useAppContext } from "../../AppProvider";
 
 export default function RegisterForm() {
 	const router = useRouter();
+	const { setUser } = useAppContext();
 	const [loading, setLoading] = useState(false);
 	const form = useForm<RegisterBodyType>({
 		resolver: zodResolver(RegisterBody),
@@ -46,8 +48,8 @@ export default function RegisterForm() {
 				sessionToken: res.payload.data.token,
 				expiresAt: res.payload.data.expiresAt,
 			});
-
-			router.push("/me");
+			setUser(res.payload.data.account);
+			router.push("/");
 			router.refresh();
 			toast({
 				title: "Login successful",

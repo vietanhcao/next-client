@@ -22,9 +22,11 @@ import {
 } from "../../../schemaValidations/auth.schema";
 import { handleErrorApi } from "../../../lib/utils";
 import { useState } from "react";
+import { useAppContext } from "../../AppProvider";
 
 export default function LoginForm() {
 	const { toast } = useToast();
+	const { setUser } = useAppContext();
 	const router = useRouter();
 	const [loading, setLoading] = useState(false);
 	const form = useForm<LoginBodyType>({
@@ -45,6 +47,7 @@ export default function LoginForm() {
 				sessionToken: res.payload.data.token,
 				expiresAt: res.payload.data.expiresAt,
 			});
+			setUser(res.payload.data.account);
 
 			router.push("/");
 			router.refresh();

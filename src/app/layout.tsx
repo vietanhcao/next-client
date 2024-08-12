@@ -1,17 +1,15 @@
 import type { Metadata } from "next";
 // import { Roboto } from "next/font/google";
+import dynamic from "next/dynamic";
 import localFont from "next/font/local";
-
-import "./globals.css";
+import SlideSession from "../components/slide-session";
 import { ThemeProvider } from "../components/theme-provider";
-import Header from "../components/header";
 import { Toaster } from "../components/ui/toaster";
 import AppProvider from "./AppProvider";
-import { cookies } from "next/headers";
-import SlideSession from "../components/slide-session";
-import accountApiRequest from "../apiRequest/api.account";
-import { AccountResType } from "../schemaValidations/account.schema";
+import "./globals.css";
 import { baseOpenGraph } from "./shared-metadata";
+
+const Header = dynamic(() => import('../components/header'), { ssr: false })
 
 // const roboto = Roboto({
 // 	subsets: ["vietnamese"],
@@ -48,8 +46,6 @@ export default async function RootLayout({
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
-	let user: AccountResType["data"] | null = null;
-
 	return (
 		<html
 			lang="en"
@@ -64,8 +60,8 @@ export default async function RootLayout({
 					enableSystem
 					disableTransitionOnChange
 				>
-					<AppProvider user={user}>
-						<Header user={user} />
+					<AppProvider>
+						<Header />
 						{children}
 						<SlideSession />
 					</AppProvider>
